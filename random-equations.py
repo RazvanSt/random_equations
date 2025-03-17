@@ -1,8 +1,10 @@
 import random
 import sys
+import argparse
+from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch  # Import inch for margins
 
@@ -40,26 +42,32 @@ def generate_equations(num_equations, max_number):
     return [generate_equation(max_number) for _ in range(num_equations)]
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python script_name.py <number_of_equations>")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Generate random math equations in a PDF.")
+    parser.add_argument("num_equations", type=int, help="The number of equations to generate.")
+    parser.add_argument("-m", "--max_number", type=int, default=100, help="The maximum number to use in the equations (default: 100).")
 
-    try:
-        num_equations = int(sys.argv[1])
-        if num_equations < 1:
-            raise ValueError
-    except ValueError:
+    args = parser.parse_args()
+
+    if args.num_equations < 1:
         print("Error: Number of equations must be a positive integer.")
         sys.exit(1)
+    
+    if args.max_number < 0:
+        print("Error: max_number must be a non-negative integer.")
+        sys.exit(1)
 
-    max_number = 100  # You can change this if needed
+    equations = generate_equations(args.num_equations, args.max_number)
 
-    equations = generate_equations(num_equations, max_number)
+    # Create a unique filename based on the current date and time
+    now = datetime.now()
+    timestamp = now.strftime("%y%m%d_%H%M%S")
+    output_filename = f"equations_{timestamp}.pdf"
 
     # Create PDF
     doc = SimpleDocTemplate(
-        "equations.pdf",
+        output_filename,
         pagesize=letter,
+        title="Random Math Equations",
         leftMargin=0.5 * inch,  # Smaller left margin
         rightMargin=0.5 * inch,  # Smaller right margin
         topMargin=0.5 * inch,    # Smaller top margin
@@ -67,6 +75,13 @@ if __name__ == "__main__":
     )
     styles = getSampleStyleSheet()
     Story = []
+
+    # Add the text "Please solve these equations:"
+    header_text = "Please solve these equations:"
+    header_style = styles["Heading2"]  # You can choose a different style if you prefer
+    header = Paragraph(header_text, header_style)
+    Story.append(header)
+    Story.append(Spacer(1, 0.2 * inch))  # Add some space between the header and the table
 
     # Prepare data for table
     data = []
@@ -88,4 +103,4 @@ if __name__ == "__main__":
     # Build PDF
     doc.build(Story)
 
-    print("Equations written to equations.pdf")
+    print(f"Equations written to {output_filename}")
