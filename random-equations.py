@@ -3,10 +3,11 @@ import sys
 import argparse
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.units import inch  # Import inch for margins
+import os  # Import the os module
 
 def generate_equation(max_number):
     """
@@ -75,6 +76,17 @@ if __name__ == "__main__":
     )
     styles = getSampleStyleSheet()
     Story = []
+
+    # Add an image
+    # Ensure you have an image file named 'logo.png' in the same directory
+    image_path = "logo.png"  # change with you image name
+    if os.path.exists(image_path):
+      img = Image(image_path, width=1 * inch, height=1 * inch) #adjust width and height to your needs
+      Story.append(img)
+      Story.append(Spacer(1, 0.2 * inch))
+    else:
+      print(f"Warning: Image file '{image_path}' not found. Skipping image insertion.")
+
 
     # Add the text "Please solve these equations:"
     header_text = "Please solve these equations:"
